@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  // Remove o output customizado
 }
 
 datasource db {
@@ -14,3 +14,46 @@ model Item {
   title     String
 }
 
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  category  String?
+  imageUrl  String?  // NOVO: URL da imagem do produto
+  createdAt DateTime @default(now())
+  
+  saleItems SaleItem[]
+}
+
+model PaymentMethod {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  taxRate  Float
+  
+  sales Sale[]
+}
+
+model Sale {
+  id              Int           @id @default(autoincrement())
+  totalGross      Float
+  totalTax        Float
+  totalNet        Float
+  paymentMethodId Int
+  createdAt       DateTime      @default(now())
+  
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
+  items         SaleItem[]
+}
+
+model SaleItem {
+  id        Int @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  subtotal  Float
+  
+  productId Int
+  saleId    Int
+  
+  product Product @relation(fields: [productId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id])
+}
