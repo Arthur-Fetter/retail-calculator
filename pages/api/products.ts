@@ -1,13 +1,11 @@
+// pages/api/products.js - VERSÃO CORRIGIDA COM TIPAGEM
 import { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../app/lib/prisma';
 
-interface ProductData {
-  name: string;
-  price: number;
-  category?: string;
-  imageUrl?: string; // NOVO
-}
-
+/**
+ * API para cadastro de produtos conforme User Story 1:
+ * "Cadastrar produto - nome, preço, categoria"
+ */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
@@ -23,30 +21,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   else if (req.method === 'POST') {
     try {
-      const { name, price, category, imageUrl }: ProductData = req.body;
+      const { name, unitPrice, kgPrice, category } = req.body;
       
-      if (!name || !price) {
-        return res.status(400).json({ error: 'Nome e preço são obrigatórios' });
+      // Validação conforme User Story 1: "Cadastrar produto"
+      if (!name || !category) {
+        return res.status(400).json({ error: 'Nome e categoria são obrigatórios' });
       }
       
+      // Fluxo BPMN: "1. Selecionar produtos → 2. Definir quantidades"
+      // Usar unitPrice se fornecido, senão usar kgPrice
+      const price = unitPrice || kgPrice;
+      
+      if (!price) {
+        return res.status(400).json({ error: 'Informe pelo menos um preço (unidade ou quilo)' });
+      }
+      
+      // Criar produto conforme escopo MVP: "Cadastro simples de produtos"
       const product = await prisma.product.create({
         data: {
-          name,
+          name: name.trim(),
           price: parseFloat(price.toString()),
           category: category || null,
-          imageUrl: imageUrl || null // NOVO
+          imageUrl: null // Para implementar upload posteriormente
         }
       });
       
       res.status(201).json(product);
     } catch (error) {
       console.error('Erro ao criar produto:', error);
-      res.status(500).json({ error: 'Erro ao criar produto' });
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      res.status(500).json({ 
+        error: 'Erro ao criar produto',
+        message: errorMessage
+      });
     }
   }
 
   else {
     res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).json({ error: 'Método não permitido' });
+    res.status(405).json({ error: `Método ${req.method} não permitido` });
   }
 }
