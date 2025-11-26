@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { prisma } from '../../app/lib/prisma';
+import { prisma } from '../../../app/lib/prisma';
 
 interface ProductData {
   name: string;
   price: number;
   category?: string;
-  imageUrl?: string; // NOVO
+  imageUrl?: string;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           name,
           price: parseFloat(price.toString()),
           category: category || null,
-          imageUrl: imageUrl || null // NOVO
+          imageUrl: imageUrl || null
         }
       });
       
