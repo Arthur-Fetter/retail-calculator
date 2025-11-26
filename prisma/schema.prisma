@@ -1,7 +1,7 @@
 // prisma/schema.prisma - ATUALIZADO para suportar User Stories 1, 2 e 3
 generator client {
   provider = "prisma-client-js"
-  // Remove o output customizado
+  binaryTargets = ["native", "linux-musl", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
